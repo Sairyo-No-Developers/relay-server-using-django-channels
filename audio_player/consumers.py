@@ -15,14 +15,6 @@ class AudioSession(AsyncWebsocketConsumer):
         )
 
         await self.accept()
-        if len(Session.objects.filter(session_name = self.room_name))>0:
-            await self.send(text_data=json.dumps({
-                'host' : True,
-            }))
-        else:
-            await self.send(text_data=json.dumps({
-                'host' : False,
-            }))
 
     async def disconnect(self, close_code):
         # Leave room group
