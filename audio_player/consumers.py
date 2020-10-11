@@ -1,6 +1,7 @@
 import json
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import AsyncWebsocketConsumer
+from .models import *
 
 class AudioSession(AsyncWebsocketConsumer):
     async def connect(self):
@@ -14,6 +15,14 @@ class AudioSession(AsyncWebsocketConsumer):
         )
 
         await self.accept()
+        if len(Session.objects.filter(session_name = self.room_name))>0:
+            await self.send(text_data=json.dumps({
+                'host' : True,
+            }))
+        else:
+            await self.send(text_data=json.dumps({
+                'host' : False,
+            }))
 
     async def disconnect(self, close_code):
         # Leave room group
