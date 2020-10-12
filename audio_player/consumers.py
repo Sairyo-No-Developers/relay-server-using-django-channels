@@ -25,7 +25,7 @@ class AudioSession(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
-        self.msg = await sync_to_async(first_connect)(self)
+        self.msg = await sync_to_async(self.first_connect)
         await self.send(text_data=json.dumps(self.msg))
 
     # @database_sync_to_async
