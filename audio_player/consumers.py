@@ -1,4 +1,5 @@
 import json
+import uuid
 from asgiref.sync import async_to_sync, sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
@@ -15,6 +16,9 @@ class AudioSession(AsyncWebsocketConsumer):
     #         ses = Session.objects.create(session_name = self.room_name)
     #         ses.save()
     #         self.msg = {"host": True}
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.consumer_ID = str(uuid.uuid4())
 
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
@@ -33,12 +37,19 @@ class AudioSession(AsyncWebsocketConsumer):
         if len(Session.objects.filter(session_name = self.room_name)) > 0:
             return {"host": False}
         else:
-            ses = Session.objects.create(session_name = self.room_name)
+            ses = Session.objects.create(session_name = self.room_name, consumer = self.consumer_ID)
             ses.save()
             return {"host": True}
 
+    @database_sync_to_async
+    def first_disconnect(self):
+        obj = Session.objects.filter(consumer = self.consumer_ID)
+        if len(obj) > 0:
+            obj[0].delete()  
+
     async def disconnect(self, close_code):
         # Leave room group
+        await self.first_disconnect()
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
