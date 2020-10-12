@@ -6,6 +6,8 @@ from .models import *
 class AudioSession(AsyncWebsocketConsumer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_group_name = 'chat_%s' % self.room_name
         if len(Session.objects.filter(session_name = self.room_name)) > 0:
             self.msg = {"host": False}
         else:
@@ -14,8 +16,6 @@ class AudioSession(AsyncWebsocketConsumer):
             self.msg = {"host": True}
 
     async def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
 
         # Join room group
         await self.channel_layer.group_add(
