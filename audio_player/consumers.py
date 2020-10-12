@@ -1,9 +1,11 @@
 import json
-from asgiref.sync import async_to_sync
+from asgiref.sync import async_to_sync, sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import *
 
 class AudioSession(AsyncWebsocketConsumer):
+    msg = {}
+
     async def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['room_name']
         self.room_group_name = 'chat_%s' % self.room_name
@@ -13,8 +15,17 @@ class AudioSession(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-
         await self.accept()
+        await sync_to_async(self.first_connect)
+        await self.send(text_data=json.dumps(self.msg))
+
+    def first_connect(self):
+        if len(Session.objects.filter(session_name = self.room_name)) > 0:
+            self.msg = {"host": False}
+        else:
+            ses = Session.objects.create(session_name = self.room_name)
+            ses.save()
+            self.msg = {"host": True}
 
     async def disconnect(self, close_code):
         # Leave room group
