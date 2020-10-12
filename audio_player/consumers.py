@@ -4,7 +4,8 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import *
 
 class AudioSession(AsyncWebsocketConsumer):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         if len(Session.objects.filter(session_name = self.room_name)) > 0:
             self.msg = {"host": False}
         else:
