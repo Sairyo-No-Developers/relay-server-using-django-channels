@@ -1,19 +1,20 @@
 import json
 from asgiref.sync import async_to_sync, sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.db import database_sync_to_async
 from .models import *
 
 class AudioSession(AsyncWebsocketConsumer):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
-        self.room_group_name = 'chat_%s' % self.room_name
-        if len(Session.objects.filter(session_name = self.room_name)) > 0:
-            self.msg = {"host": False}
-        else:
-            ses = Session.objects.create(session_name = self.room_name)
-            ses.save()
-            self.msg = {"host": True}
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.room_name = self.scope['url_route']['kwargs']['room_name']
+    #     self.room_group_name = 'chat_%s' % self.room_name
+    #     if len(Session.objects.filter(session_name = self.room_name)) > 0:
+    #         self.msg = {"host": False}
+    #     else:
+    #         ses = Session.objects.create(session_name = self.room_name)
+    #         ses.save()
+    #         self.msg = {"host": True}
 
     async def connect(self):
 
@@ -23,15 +24,17 @@ class AudioSession(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
+        self.msg = await sync_to_async(first_connect)(self)
         await self.send(text_data=json.dumps(self.msg))
 
+    # @database_sync_to_async
     def first_connect(self):
         if len(Session.objects.filter(session_name = self.room_name)) > 0:
-            self.msg = {"host": False}
+            return {"host": False}
         else:
             ses = Session.objects.create(session_name = self.room_name)
             ses.save()
-            self.msg = {"host": True}
+            return {"host": True}
 
     async def disconnect(self, close_code):
         # Leave room group
