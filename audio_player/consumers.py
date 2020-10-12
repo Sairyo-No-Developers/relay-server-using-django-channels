@@ -37,13 +37,13 @@ class AudioSession(AsyncWebsocketConsumer):
         if len(Session.objects.filter(session_name = self.room_name)) > 0:
             return {"host": False}
         else:
-            ses = Session.objects.create(session_name = self.room_name, consumer = self.consumer_ID)
+            ses = Session.objects.create(session_name = self.room_name, consumer_name = self.consumer_ID)
             ses.save()
             return {"host": True}
 
     @database_sync_to_async
     def first_disconnect(self):
-        obj = Session.objects.filter(consumer = self.consumer_ID)
+        obj = Session.objects.filter(consumer_name = self.consumer_ID)
         if len(obj) > 0:
             obj[0].delete()  
 
