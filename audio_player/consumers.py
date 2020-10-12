@@ -25,10 +25,10 @@ class AudioSession(AsyncWebsocketConsumer):
             self.channel_name
         )
         await self.accept()
-        self.msg = await sync_to_async(self.first_connect)
+        self.msg = await self.first_connect()
         await self.send(text_data=json.dumps(self.msg))
 
-    # @database_sync_to_async
+    @database_sync_to_async
     def first_connect(self):
         if len(Session.objects.filter(session_name = self.room_name)) > 0:
             return {"host": False}
