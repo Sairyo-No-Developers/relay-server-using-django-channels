@@ -70,6 +70,7 @@ class AudioSession(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
         data = json.loads(message)
+        print(data)
         if data["is_host"] == "1":
             await self.set_details(data["media_url"])
         # Send message to room group
