@@ -55,12 +55,23 @@ class AudioSession(AsyncWebsocketConsumer):
             self.channel_name
         )
 
+    @database_sync_to_async
+    def set_details(self,url):
+        try:
+            ses = Session.objects.filter(session_name = self.room_name)[0]
+            ses.media_url = url
+            ses.save()
+        except:
+            pass
+
     # Receive message from WebSocket
     async def receive(self, text_data):
         # message = text_data
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
-
+        data = json.loads(message)
+        if data["is_host"] == "1":
+            await self.set_details(data["media_url"])
         # Send message to room group
         await self.channel_layer.group_send(
             self.room_group_name,
