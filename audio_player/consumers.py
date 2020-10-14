@@ -35,7 +35,7 @@ class AudioSession(AsyncWebsocketConsumer):
     @database_sync_to_async
     def first_connect(self):
         if len(Session.objects.filter(session_name = self.room_name)) > 0:
-            return {"host": False}
+            return {"host": False, "media_url": Session.objects.filter(session_name = self.room_name)[0].media_url}
         else:
             ses = Session.objects.create(session_name = self.room_name, consumer_name = self.consumer_ID)
             ses.save()
